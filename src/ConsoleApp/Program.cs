@@ -24,7 +24,7 @@ namespace HackerNewsScraper.ConsoleApp
 			await root.InvokeAsync(args);
 		}
 
-		private static async Task DownloadAndPrint(int posts = 0)
+		private static async Task DownloadAndPrint(int posts)
 		{
 			if (posts <= 0)
 			{

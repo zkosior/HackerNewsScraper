@@ -11,6 +11,7 @@ namespace HackerNewsScraper.ConsoleApp
 	public class HackerNewsScraper
 	{
 		private const string HackerNewsBaseUrl = "https://news.ycombinator.com/";
+
 		private readonly HttpClient client = new HttpClient
 		{
 			BaseAddress = new Uri(HackerNewsBaseUrl),
@@ -22,7 +23,16 @@ namespace HackerNewsScraper.ConsoleApp
 			var page = 0;
 			while (count > 0)
 			{
-				var posts = (await GetPosts(++page)).ToList();
+				List<Post> posts;
+				try
+				{
+					posts = (await GetPosts(++page)).ToList();
+				}
+				catch (ApplicationException e)
+				{
+					return e.Message;
+				}
+
 				var toTake = Math.Min(posts.Count, count);
 				toReturn.AddRange(posts.Take(toTake));
 				count -= toTake;
@@ -34,38 +44,64 @@ namespace HackerNewsScraper.ConsoleApp
 		private async Task<IEnumerable<Post>> GetPosts(int pageNumber) =>
 			ParsePosts(GetHtmlNodes(await this.DownloadContent(pageNumber)));
 
-		private async Task<string> DownloadContent(int page) =>
-			await client.GetStringAsync($"/news?p={page}");
+		private async Task<string> DownloadContent(int page)
+		{
+			try
+			{
+				return await client.GetStringAsync($"/news?p={page}");
+			}
+			catch (HttpRequestException)
+			{
+				// checking status code might work better here
+				throw new ApplicationException("Could not download posts.");
+			}
+		}
 
 		private static HtmlNodeCollection GetHtmlNodes(string content)
 		{
 			var htmlDoc = new HtmlDocument();
 			htmlDoc.LoadHtml(content);
-			return htmlDoc.DocumentNode
+			// this code is not resilient to layout changes
+			// as an example skipping first two rows
+			var nodes = htmlDoc.DocumentNode
 				.SelectNodes("//body/center/table/tr")
 				.Skip(2).First()
 				.SelectNodes("./td/table/tr");
+
+			if (nodes == null)
+			{
+				// todo: there should be more checking for failures in parsing
+				// either as logging or additional status,
+				// but that could get in the way of clean json output
+				throw new ApplicationException("Could not parse content.");
+			}
+
+			return nodes;
 		}
 
 		private static IEnumerable<Post> ParsePosts(HtmlNodeCollection nodes)
 		{
-			for (int i = 0; i < nodes.Count - 2; i+=3)
+			// currently Hacker News lists 30 posts per page,
+			// and there is some site formatting that needs to be handled
+			var skipLastRows = 2;
+			for (int i = 0; i < nodes.Count - skipLastRows; i += 3)
 			{
 				var main = nodes[i].SelectNodes("./td");
-				var details = nodes[i+1].SelectNodes("./td").Last();
+				var details = nodes[i + 1].SelectNodes("./td").Last();
 
-				if (!ParseTitle(main, out var title) ||
-					!ParseUri(main, out var uri) ||
-					!ParseRank(main, out var rank) ||
-					!ParseAuthor(details, out var author) ||
-					!ParsePoints(details, out var points)) continue;
+				if (main == null || details == null ||
+					!TryParseTitle(main, out var title) ||
+					!TryParseUri(main, out var uri) ||
+					!TryParseRank(main, out var rank) ||
+					!TryParseAuthor(details, out var author) ||
+					!TryParsePoints(details, out var points)) continue;
 
-				var anyComments = ParseComments(details, out var comments);
+				var anyComments = TryParseComments(details, out var comments);
 				yield return new Post(title, author, uri, rank, points, anyComments ? comments : default(int?));
 			}
 		}
 
-		private static bool ParseTitle(
+		private static bool TryParseTitle(
 			HtmlNodeCollection nodes,
 			out string author)
 		{
@@ -80,7 +116,7 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
-		private static bool ParseAuthor(
+		private static bool TryParseAuthor(
 			HtmlNode node,
 			out string author)
 		{
@@ -95,15 +131,15 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
-		private static bool ParseUri(HtmlNodeCollection nodes, out Uri uri)
+		private static bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
 		{
 			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
 			if (string.IsNullOrWhiteSpace(url))
 			{
 				uri = new Uri(HackerNewsBaseUrl);
 				return false;
-
 			}
+
 			try
 			{
 				uri = new Uri(
@@ -119,21 +155,23 @@ namespace HackerNewsScraper.ConsoleApp
 			}
 		}
 
-		private static bool ParseRank(HtmlNodeCollection nodes, out int rank) =>
+		private static bool TryParseRank(HtmlNodeCollection nodes, out int rank) =>
 			int.TryParse(
 				nodes.First().SelectSingleNode("./span").InnerText.TrimEnd('.'),
 				out rank);
 
-		private static bool ParsePoints(HtmlNode node, out int points) =>
+		private static bool TryParsePoints(HtmlNode node, out int points) =>
 			int.TryParse(
 				node.SelectNodes("./span").First().InnerText.Split(' ')[0],
 				out points);
 
-		private static bool ParseComments(HtmlNode node, out int comments) =>
+		// doesn't differentiate between not found node and no comments
+		private static bool TryParseComments(HtmlNode node, out int comments) =>
 			int.TryParse(
 				node.SelectNodes("./a").Last().InnerText.Split('&')[0],
 				out comments);
 
+		// nicer option would be to replace last characters with '...' in case of too long strings
 		private static string LimitString(string text, int length) =>
 			text.Substring(0, Math.Min(text.Length, length));
 
