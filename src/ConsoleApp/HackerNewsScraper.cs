@@ -6,9 +6,9 @@ using System.Net.Http;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace HackerNewsScrapper.ConsoleApp
+namespace HackerNewsScraper.ConsoleApp
 {
-	public class HackerNewsScrapper
+	public class HackerNewsScraper
 	{
 		private const string HackerNewsBaseUrl = "https://news.ycombinator.com/";
 		private readonly HttpClient client = new HttpClient

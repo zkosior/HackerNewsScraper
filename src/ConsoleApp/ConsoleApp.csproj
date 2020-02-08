@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <AssemblyName>hackernews</AssemblyName>
-    <RootNamespace>HackerNewsScrapper.ConsoleApp</RootNamespace>
+    <RootNamespace>HackerNewsScraper.ConsoleApp</RootNamespace>
     <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
     <CodeAnalysisRuleSet>.\StyleCop.ruleset</CodeAnalysisRuleSet>
     <Nullable>enable</Nullable>

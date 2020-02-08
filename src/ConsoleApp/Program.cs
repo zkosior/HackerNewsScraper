@@ -3,19 +3,20 @@ using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Threading.Tasks;
 
-namespace HackerNewsScrapper.ConsoleApp
+namespace HackerNewsScraper.ConsoleApp
 {
 	class Program
 	{
 		static async Task Main(params string[] args)
 		{
-			RootCommand root = new RootCommand("Scrapps Hacker News page for posts metadata.")
+			RootCommand root = new RootCommand("Scraps Hacker News page for posts metadata.")
 			{
 				new Option(
 					new string[] { "--posts", "-p" },
 					"How many posts to print. A positive integer <= 100.")
 				{
 					Argument = new Argument<int>(),
+					Required = true,
 				},
 			};
 
@@ -37,7 +38,7 @@ namespace HackerNewsScrapper.ConsoleApp
 				posts = 100;
 			}
 
-			var nodes = await new HackerNewsScrapper().DownloadPosts(posts);
+			var nodes = await new HackerNewsScraper().DownloadPosts(posts);
 
 			Console.WriteLine(nodes);
 		}

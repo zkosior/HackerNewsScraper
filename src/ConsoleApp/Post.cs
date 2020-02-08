@@ -1,6 +1,6 @@
 using System;
 
-namespace HackerNewsScrapper.ConsoleApp
+namespace HackerNewsScraper.ConsoleApp
 {
 	public class Post
 	{

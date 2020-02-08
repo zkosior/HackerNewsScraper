@@ -1,4 +1,4 @@
-# Hacker News Scrapper
+# Hacker News Scraper
 
 ## Instructions
 
