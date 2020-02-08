@@ -1,11 +1,13 @@
-﻿namespace HackerNewsScrapper.ConsoleApp
+using System;
+
+namespace HackerNewsScrapper.ConsoleApp
 {
 	public class Post
 	{
 		public Post(
 			string title,
 			string author,
-			string uri,
+			Uri uri,
 			int rank,
 			int points,
 			int? comments)
@@ -22,7 +24,7 @@
 
 		public string Author { get; }
 
-		public string Uri { get; }
+		public Uri Uri { get; }
 
 		public int Rank { get; }
 

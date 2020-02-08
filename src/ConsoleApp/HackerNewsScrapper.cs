@@ -10,9 +10,10 @@ namespace HackerNewsScrapper.ConsoleApp
 {
 	public class HackerNewsScrapper
 	{
+		private const string HackerNewsBaseUrl = "https://news.ycombinator.com/";
 		private readonly HttpClient client = new HttpClient
 		{
-			BaseAddress = new Uri("https://news.ycombinator.com/"),
+			BaseAddress = new Uri(HackerNewsBaseUrl),
 		};
 
 		public async Task<string> DownloadPosts(int count)
@@ -31,7 +32,7 @@ namespace HackerNewsScrapper.ConsoleApp
 		}
 
 		private async Task<IEnumerable<Post>> GetPosts(int pageNumber) =>
-			ParsePosts(GetHtmlNodes(await this.DownloadContent(++pageNumber)));
+			ParsePosts(GetHtmlNodes(await this.DownloadContent(pageNumber)));
 
 		private async Task<string> DownloadContent(int page) =>
 			await client.GetStringAsync($"/news?p={page}");
@@ -48,20 +49,93 @@ namespace HackerNewsScrapper.ConsoleApp
 
 		private static IEnumerable<Post> ParsePosts(HtmlNodeCollection nodes)
 		{
-			for (int i = 0; i < nodes.Count - 2; i++)
+			for (int i = 0; i < nodes.Count - 2; i+=3)
 			{
 				var main = nodes[i].SelectNodes("./td");
-				var details = nodes[++i].SelectNodes("./td").Last();
-				++i;
-				var rank = Int32.Parse(main.First().SelectSingleNode("./span").InnerText.TrimEnd('.'));
-				var title = main.Last().SelectSingleNode("./a").InnerText;
-				var url = main.Last().SelectSingleNode("./a").Attributes["href"].Value;
-				var points = Int32.Parse(details.SelectNodes("./span").First().InnerText.Split(' ')[0]);
-				var author = details.SelectNodes("./a").First().InnerText;
-				var anyComments = Int32.TryParse(details.SelectNodes("./a").Last().InnerText.Split('&')[0], out var comments);
-				yield return new Post(title, author, url, rank, points, anyComments ? comments : default(int?));
+				var details = nodes[i+1].SelectNodes("./td").Last();
+
+				if (!ParseTitle(main, out var title) ||
+					!ParseUri(main, out var uri) ||
+					!ParseRank(main, out var rank) ||
+					!ParseAuthor(details, out var author) ||
+					!ParsePoints(details, out var points)) continue;
+
+				var anyComments = ParseComments(details, out var comments);
+				yield return new Post(title, author, uri, rank, points, anyComments ? comments : default(int?));
 			}
 		}
+
+		private static bool ParseTitle(
+			HtmlNodeCollection nodes,
+			out string author)
+		{
+			var text = nodes.Last().SelectSingleNode("./a").InnerText;
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				author = string.Empty;
+				return false;
+			}
+
+			author = LimitString(text, 256);
+			return true;
+		}
+
+		private static bool ParseAuthor(
+			HtmlNode node,
+			out string author)
+		{
+			var text = node.SelectNodes("./a").First().InnerText;
+			if (string.IsNullOrWhiteSpace(text))
+			{
+				author = string.Empty;
+				return false;
+			}
+
+			author = LimitString(text, 256);
+			return true;
+		}
+
+		private static bool ParseUri(HtmlNodeCollection nodes, out Uri uri)
+		{
+			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
+			if (string.IsNullOrWhiteSpace(url))
+			{
+				uri = new Uri(HackerNewsBaseUrl);
+				return false;
+
+			}
+			try
+			{
+				uri = new Uri(
+					url.StartsWith("item?")
+					? HackerNewsBaseUrl + url
+					: url);
+				return true;
+			}
+			catch (UriFormatException)
+			{
+				uri = new Uri(HackerNewsBaseUrl);
+				return false;
+			}
+		}
+
+		private static bool ParseRank(HtmlNodeCollection nodes, out int rank) =>
+			int.TryParse(
+				nodes.First().SelectSingleNode("./span").InnerText.TrimEnd('.'),
+				out rank);
+
+		private static bool ParsePoints(HtmlNode node, out int points) =>
+			int.TryParse(
+				node.SelectNodes("./span").First().InnerText.Split(' ')[0],
+				out points);
+
+		private static bool ParseComments(HtmlNode node, out int comments) =>
+			int.TryParse(
+				node.SelectNodes("./a").Last().InnerText.Split('&')[0],
+				out comments);
+
+		private static string LimitString(string text, int length) =>
+			text.Substring(0, Math.Min(text.Length, length));
 
 		private static string Serialize(List<Post> toReturn) =>
 			JsonSerializer.Serialize<IEnumerable<Post>>(
