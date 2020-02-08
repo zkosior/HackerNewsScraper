@@ -6,7 +6,7 @@
     <AssemblyName>hackernews</AssemblyName>
     <RootNamespace>HackerNewsScrapper.ConsoleApp</RootNamespace>
     <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
-    <CodeAnalysisRuleSet>..\..\CodeAnalysis\StyleCop.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRuleSet>.\StyleCop.ruleset</CodeAnalysisRuleSet>
     <Nullable>enable</Nullable>
     <DocumentationFile>$(OutputPath)bin\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);1573;1591;1701;1702;1712</NoWarn>
@@ -20,7 +20,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include="..\..\CodeAnalysis\StyleCop.ruleset" Link="StyleCop.ruleset" />
+    <AdditionalFiles Include=".\StyleCop.ruleset" Link="StyleCop.ruleset" />
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
