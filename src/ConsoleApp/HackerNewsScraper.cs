@@ -2,60 +2,19 @@ using HtmlAgilityPack;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
-using System.Text.Json;
-using System.Threading.Tasks;
 
 namespace HackerNewsScraper.ConsoleApp
 {
 	public class HackerNewsScraper
 	{
-		private const string HackerNewsBaseUrl = "https://news.ycombinator.com/";
+		private readonly string hackerNewsBaseUrl;
 
-		private readonly HttpClient client = new HttpClient
+		public HackerNewsScraper(string baseAddress)
 		{
-			BaseAddress = new Uri(HackerNewsBaseUrl),
-		};
-
-		public async Task<string> DownloadPosts(int count)
-		{
-			var toReturn = new List<Post>();
-			var page = 0;
-			while (count > 0)
-			{
-				List<Post> posts;
-				try
-				{
-					posts = (await GetPosts(++page)).ToList();
-				}
-				catch (ApplicationException e)
-				{
-					return e.Message;
-				}
-
-				var toTake = Math.Min(posts.Count, count);
-				toReturn.AddRange(posts.Take(toTake));
-				count -= toTake;
-			}
-
-			return Serialize(toReturn);
+			this.hackerNewsBaseUrl = baseAddress;
 		}
 
-		private async Task<IEnumerable<Post>> GetPosts(int pageNumber) =>
-			ParsePosts(GetHtmlNodes(await this.DownloadContent(pageNumber)));
-
-		private async Task<string> DownloadContent(int page)
-		{
-			try
-			{
-				return await client.GetStringAsync($"/news?p={page}");
-			}
-			catch (HttpRequestException)
-			{
-				// checking status code might work better here
-				throw new ApplicationException("Could not download posts.");
-			}
-		}
+		public IEnumerable<Post> GetPosts(string content) => ParsePosts(GetHtmlNodes(content));
 
 		private static HtmlNodeCollection GetHtmlNodes(string content)
 		{
@@ -79,7 +38,7 @@ namespace HackerNewsScraper.ConsoleApp
 			return nodes;
 		}
 
-		private static IEnumerable<Post> ParsePosts(HtmlNodeCollection nodes)
+		private IEnumerable<Post> ParsePosts(HtmlNodeCollection nodes)
 		{
 			// currently Hacker News lists 30 posts per page,
 			// and there is some site formatting that needs to be handled
@@ -131,12 +90,12 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
-		private static bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
+		private bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
 		{
 			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
 			if (string.IsNullOrWhiteSpace(url))
 			{
-				uri = new Uri(HackerNewsBaseUrl);
+				uri = new Uri(this.hackerNewsBaseUrl);
 				return false;
 			}
 
@@ -144,13 +103,13 @@ namespace HackerNewsScraper.ConsoleApp
 			{
 				uri = new Uri(
 					url.StartsWith("item?")
-					? HackerNewsBaseUrl + url
+					? this.hackerNewsBaseUrl + url
 					: url);
 				return true;
 			}
 			catch (UriFormatException)
 			{
-				uri = new Uri(HackerNewsBaseUrl);
+				uri = new Uri(this.hackerNewsBaseUrl);
 				return false;
 			}
 		}
@@ -174,15 +133,5 @@ namespace HackerNewsScraper.ConsoleApp
 		// nicer option would be to replace last characters with '...' in case of too long strings
 		private static string LimitString(string text, int length) =>
 			text.Substring(0, Math.Min(text.Length, length));
-
-		private static string Serialize(List<Post> toReturn) =>
-			JsonSerializer.Serialize<IEnumerable<Post>>(
-				toReturn,
-				new JsonSerializerOptions
-				{
-					IgnoreNullValues = true,
-					PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-					WriteIndented = true,
-				});
 	}
 }
