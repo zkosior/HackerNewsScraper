@@ -105,34 +105,8 @@ namespace HackerNewsScraper.ConsoleApp
 				return true;
 			}
 
-			//if (!Helpers.IsValidUri(url))
-			{
-				uri = new Uri(this.hackerNewsBaseUrl);
-				return false;
-			}
-
-			//try
-			//{
-			//	var address = url.StartsWith("item?")
-			//		? this.hackerNewsBaseUrl + url
-			//		: url;
-
-			//	if (Helpers.IsValidUri(address))
-			//	{
-			//		uri = new Uri(address);
-			//		return Helpers.IsValidUri(address);
-			//	}
-			//	else
-			//	{
-			//		uri = new Uri(this.hackerNewsBaseUrl);
-			//		return false;
-			//	}
-			//}
-			//catch (UriFormatException)
-			//{
-			//	uri = new Uri(this.hackerNewsBaseUrl);
-			//	return false;
-			//}
+			uri = new Uri(this.hackerNewsBaseUrl);
+			return false;
 		}
 
 		private bool TryFromRelative(string relative, out string absolute)
