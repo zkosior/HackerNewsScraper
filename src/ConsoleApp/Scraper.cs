@@ -90,6 +90,7 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
+		// todo: better uri validation would be nice
 		private bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
 		{
 			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;

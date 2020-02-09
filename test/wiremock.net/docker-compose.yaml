@@ -1,0 +1,8 @@
+version: "3.7"
+services:
+  wiremock:
+    container_name: hackernews-wiremock
+    image: hackernews-wiremock
+    build: .
+    ports:
+      - "9091:80"
