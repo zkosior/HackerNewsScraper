@@ -42,16 +42,17 @@ namespace HackerNewsScraper.ConsoleApp
 			}
 
 			var baseAddress = "https://news.ycombinator.com/";
-			var client = new HNClient(baseAddress);
-			var scraper = new HackerNewsScraper(baseAddress);
-			var nodes = await DownloadPosts(client, scraper, posts);
+			var nodes = await DownloadPosts(
+				new Client(baseAddress),
+				new Scraper(baseAddress),
+				posts);
 
 			Console.WriteLine(nodes);
 		}
 
 		public static async Task<string> DownloadPosts(
-			HNClient client,
-			HackerNewsScraper scraper,
+			Client client,
+			Scraper scraper,
 			int count)
 		{
 			var toReturn = new List<Post>();

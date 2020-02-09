@@ -4,17 +4,15 @@ using System.Threading.Tasks;
 
 namespace HackerNewsScraper.ConsoleApp
 {
-	public class HNClient
+	public class Client
 	{
 		private readonly HttpClient client;
 
-		public HNClient(string baseAddress)
-		{
+		public Client(string baseAddress) =>
 			client = new HttpClient
 			{
 				BaseAddress = new Uri(baseAddress),
 			};
-		}
 
 		public async Task<string> DownloadContent(int page)
 		{

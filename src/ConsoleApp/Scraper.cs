@@ -5,11 +5,11 @@ using System.Linq;
 
 namespace HackerNewsScraper.ConsoleApp
 {
-	public class HackerNewsScraper
+	public class Scraper
 	{
 		private readonly string hackerNewsBaseUrl;
 
-		public HackerNewsScraper(string baseAddress)
+		public Scraper(string baseAddress)
 		{
 			this.hackerNewsBaseUrl = baseAddress;
 		}
