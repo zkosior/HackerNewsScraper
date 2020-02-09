@@ -93,32 +93,58 @@ namespace HackerNewsScraper.ConsoleApp
 		private bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
 		{
 			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
-			if (!Helpers.IsValidUri(url))
+			if (Helpers.IsValidUri(url))
+			{
+				uri = new Uri(url);
+				return true;
+			}
+
+			if (url.StartsWith("item?") && TryFromRelative(url, out var absolute))
+			{
+				uri = new Uri(absolute);
+				return true;
+			}
+
+			//if (!Helpers.IsValidUri(url))
 			{
 				uri = new Uri(this.hackerNewsBaseUrl);
 				return false;
 			}
 
-			try
-			{
-				var address = url.StartsWith("item?")
-					? this.hackerNewsBaseUrl + url
-					: url;
+			//try
+			//{
+			//	var address = url.StartsWith("item?")
+			//		? this.hackerNewsBaseUrl + url
+			//		: url;
 
-				if (Helpers.IsValidUri(address))
-				{
-					uri = new Uri(address);
-					return Helpers.IsValidUri(address);
-				}
-				else
-				{
-					uri = new Uri(this.hackerNewsBaseUrl);
-					return false;
-				}
-			}
-			catch (UriFormatException)
+			//	if (Helpers.IsValidUri(address))
+			//	{
+			//		uri = new Uri(address);
+			//		return Helpers.IsValidUri(address);
+			//	}
+			//	else
+			//	{
+			//		uri = new Uri(this.hackerNewsBaseUrl);
+			//		return false;
+			//	}
+			//}
+			//catch (UriFormatException)
+			//{
+			//	uri = new Uri(this.hackerNewsBaseUrl);
+			//	return false;
+			//}
+		}
+
+		private bool TryFromRelative(string relative, out string absolute)
+		{
+			if (Helpers.IsValidUri(this.hackerNewsBaseUrl + relative))
 			{
-				uri = new Uri(this.hackerNewsBaseUrl);
+				absolute = this.hackerNewsBaseUrl + relative;
+				return true;
+			}
+			else
+			{
+				absolute = this.hackerNewsBaseUrl;
 				return false;
 			}
 		}

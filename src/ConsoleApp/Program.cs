@@ -33,35 +33,16 @@ namespace HackerNewsScraper.ConsoleApp
 
 		private static async Task DownloadAndPrint(string? address, int posts)
 		{
-			if (address == null)
+			if (!Helpers.ValidateAddress(address, out var validatedAddress) ||
+				!Helpers.ValidatePostsCount(posts, out var validatedPosts))
 			{
-				address = "https://news.ycombinator.com/";
-			}
-			else
-			{
-				if (!Helpers.IsValidUri(address))
-				{
-					Console.WriteLine("Not valid Uri.");
-					return;
-				}
-			}
-
-			if (posts <= 0)
-			{
-				Console.WriteLine("Nothing to download.");
 				return;
 			}
 
-			if (posts > 100)
-			{
-				Console.WriteLine("Too much to download. Limiting to 100.");
-				posts = 100;
-			}
-
 			var nodes = await Collector.Collect(
-				new Client(address!),
-				new Scraper(address!),
-				posts);
+				new Client(validatedAddress!),
+				new Scraper(validatedAddress!),
+				validatedPosts);
 
 			Console.WriteLine(nodes);
 		}

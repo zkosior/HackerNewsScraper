@@ -23,5 +23,45 @@ namespace HackerNewsScraper.ConsoleApp
 			Uri.TryCreate(address, UriKind.Absolute, out var uri) &&
 			Dns.GetHostAddresses(uri.DnsSafeHost).Length > 0;
 
+		public static bool ValidateAddress(string? address, out string validatedAddress)
+		{
+			validatedAddress = "https://news.ycombinator.com/";
+			if (address == null)
+			{
+				return true;
+			}
+			else if (!IsValidUri(address))
+			{
+				Console.WriteLine("Not valid Uri.");
+				return false;
+			}
+			else if (!address.EndsWith('/')) // already is valid
+			{
+				validatedAddress = address + "/"; // for consistency
+				return true;
+			}
+
+			return false; // shouldn't happen
+		}
+
+		public static bool ValidatePostsCount(int posts, out int validatedPosts)
+		{
+			if (posts <= 0)
+			{
+				Console.WriteLine("Nothing to download.");
+				validatedPosts = 0;
+				return false;
+			}
+
+			if (posts > 100)
+			{
+				Console.WriteLine("Too much to download. Limiting to 100.");
+				validatedPosts = 100;
+				return true;
+			}
+
+			validatedPosts = posts;
+			return true;
+		}
 	}
 }
