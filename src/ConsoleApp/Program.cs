@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.CommandLine;
 using System.CommandLine.Invocation;
 using System.Linq;
+using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 
@@ -21,14 +22,34 @@ namespace HackerNewsScraper.ConsoleApp
 					Argument = new Argument<int>(),
 					Required = true,
 				},
+				new Option(
+					new string[] { "--address", "-a" },
+					"Base address to Hacker News.")
+				{
+					Argument = new Argument<string>(),
+					Required = false,
+				},
 			};
 
-			root.Handler = CommandHandler.Create<int>(DownloadAndPrint);
+			root.Handler = CommandHandler.Create<string, int>(DownloadAndPrint);
 			await root.InvokeAsync(args);
 		}
 
-		private static async Task DownloadAndPrint(int posts)
+		private static async Task DownloadAndPrint(string? address, int posts)
 		{
+			if (address == null)
+			{
+				address = "https://news.ycombinator.com/";
+			}
+			else
+			{
+				if (!IsValidUri(address))
+				{
+					Console.WriteLine("Not valid Uri.");
+					return;
+				}
+			}
+
 			if (posts <= 0)
 			{
 				Console.WriteLine("Nothing to download.");
@@ -41,14 +62,19 @@ namespace HackerNewsScraper.ConsoleApp
 				posts = 100;
 			}
 
-			var baseAddress = "https://news.ycombinator.com/";
 			var nodes = await DownloadPosts(
-				new Client(baseAddress),
-				new Scraper(baseAddress),
+				new Client(address!),
+				new Scraper(address!),
 				posts);
 
 			Console.WriteLine(nodes);
 		}
+
+		private static bool IsValidUri(string? address) =>
+			!string.IsNullOrWhiteSpace(address) &&
+			(address.StartsWith("http://") || address.StartsWith("https://")) &&
+			Uri.TryCreate(address, UriKind.Absolute, out var uri) &&
+			Dns.GetHostAddresses(uri.DnsSafeHost).Length > 0;
 
 		public static async Task<string> DownloadPosts(
 			Client client,
