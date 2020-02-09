@@ -90,11 +90,10 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
-		// todo: better uri validation would be nice
 		private bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
 		{
 			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
-			if (string.IsNullOrWhiteSpace(url))
+			if (!Helpers.IsValidUri(url))
 			{
 				uri = new Uri(this.hackerNewsBaseUrl);
 				return false;
@@ -102,11 +101,20 @@ namespace HackerNewsScraper.ConsoleApp
 
 			try
 			{
-				uri = new Uri(
-					url.StartsWith("item?")
+				var address = url.StartsWith("item?")
 					? this.hackerNewsBaseUrl + url
-					: url);
-				return true;
+					: url;
+
+				if (Helpers.IsValidUri(address))
+				{
+					uri = new Uri(address);
+					return Helpers.IsValidUri(address);
+				}
+				else
+				{
+					uri = new Uri(this.hackerNewsBaseUrl);
+					return false;
+				}
 			}
 			catch (UriFormatException)
 			{
