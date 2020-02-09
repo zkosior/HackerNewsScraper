@@ -8,25 +8,30 @@ Requirements are located in 'Assignment' folder.
 
 ### For executable application
 
-Run command: dotnet publish .\src\ConsoleApp\ConsoleApp.csproj -c Release
+Run command: `dotnet publish .\src\ConsoleApp\ConsoleApp.csproj -c Release`
 
 ### For docker image
 
-Run command: docker build -f .\DockerFile -t hackernews .
+Run command: `docker build -f .\DockerFile -t hackernews .`
 
 ## Run
 
 ### Executable
 
-hackernews --posts 10
-hackernews --help
+`hackernews --posts 10`
+`hackernews --help`
 
 ### Docker container
 
 After builting to image "hackernews"
 
-docker run -it --rm hackernews --posts 10
-docker run -it --rm hackernews --help
+`docker run -it --rm hackernews --posts 10`
+`docker run -it --rm hackernews --help`
+
+## Run mock
+
+You can build and run local mock endpoint for testing.
+From test\wiremock.net run `StartMock.ps1` and after using it you can remove containers and images with `Clean.ps1`
 
 ## Requirements
 
