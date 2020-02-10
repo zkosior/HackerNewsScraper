@@ -134,10 +134,19 @@ namespace HackerNewsScraper.ConsoleApp
 				out points);
 
 		// doesn't differentiate between not found node and no comments
-		private static bool TryParseComments(HtmlNode node, out int comments) =>
-			int.TryParse(
+		private static bool TryParseComments(HtmlNode node, out int comments)
+		{
+			var commentsElement = node.SelectNodes("./a").Last().InnerText.Split('&');
+			if (commentsElement.Length != 2)
+			{
+				comments = 0;
+				return false;
+			}
+
+			return int.TryParse(
 				node.SelectNodes("./a").Last().InnerText.Split('&')[0],
 				out comments);
+		}
 
 		// nicer option would be to replace last characters with '...' in case of too long strings
 		private static string LimitString(string text, int length) =>

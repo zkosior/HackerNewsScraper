@@ -1,0 +1,38 @@
+{
+    "Priority": 4,
+    "Request": {
+      "Methods": [
+        "get"
+      ],
+      "Path": {
+        "Matchers": [
+          {
+            "Name": "WildcardMatcher",
+            "Pattern": "/news",
+            "IgnoreCase": false
+          }
+        ]
+      },
+      "Params": [
+        {
+          "Name": "p",
+          "Matchers": [
+            {
+              "Name": "ExactMatcher",
+              "Pattern": "4"
+            }
+          ]
+        }
+      ],
+      "Headers": [],
+      "Body": {}
+    },
+    "Response": {
+      "UseTransformer": false,
+      "StatusCode": 200,
+      "Headers": {
+        "Content-Type": "text/html"
+      },
+      "BodyAsFile": "Page4.html"
+    }
+  }
