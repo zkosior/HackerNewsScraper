@@ -2,6 +2,7 @@ using HackerNewsScraper.ConsoleApp;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace HackerNewsScraper.ConsoleAppTests
@@ -12,76 +13,76 @@ namespace HackerNewsScraper.ConsoleAppTests
 		private const string BaseAddress = "https://news.ycombinator.com/"; // any address, doesn't have to be HN
 
 		[Fact]
-		public void ConvertsHtmlToObjects()
+		public async Task ConvertsHtmlToObjects()
 		{
-			var nodes = LoadPage1();
+			var nodes = await LoadPage1();
 
 			Assert.NotEmpty(nodes);
 			Assert.Equal(30, nodes.Count);
 		}
 
 		[Fact]
-		public void LoadsRelativeAsBaseAddress() =>
+		public async Task LoadsRelativeAsBaseAddress() =>
 			Assert.StartsWith(
 				BaseAddress,
-				LoadPage1().Single(p => p.Rank == 29).Uri.AbsoluteUri,
+				(await LoadPage1()).Single(p => p.Rank == 29).Uri.AbsoluteUri,
 				System.StringComparison.Ordinal);
 
 		[Fact]
-		public void IgnoresOnMissingUri() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 1);
+		public async Task IgnoresOnMissingUri() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 1);
 
 		[Fact]
-		public void IgnoresOnInvalidUri() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 2);
+		public async Task IgnoresOnInvalidUri() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 2);
 
 		[Fact]
-		public void IgnoresOnMissingRank() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 3);
+		public async Task IgnoresOnMissingRank() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 3);
 
 		[Fact]
-		public void IgnoresOnMissingAuthor() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 4);
+		public async Task IgnoresOnMissingAuthor() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 4);
 
 		[Fact]
-		public void IgnoresOnMissingTitle() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 5);
+		public async Task IgnoresOnMissingTitle() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 5);
 
 		[Fact]
-		public void IgnoresOnMissingPoints() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 6);
+		public async Task IgnoresOnMissingPoints() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 6);
 
 		[Fact]
-		public void IgnoresOnInvalidPoints() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 7);
+		public async Task IgnoresOnInvalidPoints() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 7);
 
 		[Fact]
-		public void IgnoresOnInvalidRank() =>
-			Assert.DoesNotContain(LoadInvalidData(), p => p.Rank == 8);
+		public async Task IgnoresOnInvalidRank() =>
+			Assert.DoesNotContain(await LoadInvalidData(), p => p.Rank == 8);
 
 		[Fact]
-		public void IgnoresMissingComments() =>
-			Assert.Null(LoadInvalidData().Single(p => p.Rank == 9).Comments);
+		public async Task IgnoresMissingComments() =>
+			Assert.Null((await LoadInvalidData()).Single(p => p.Rank == 9).Comments);
 
 		[Fact]
-		public void IgnoresInvalidComments() =>
-			Assert.Null(LoadInvalidData().Single(p => p.Rank == 10).Comments);
+		public async Task IgnoresInvalidComments() =>
+			Assert.Null((await LoadInvalidData()).Single(p => p.Rank == 10).Comments);
 
 		[Fact]
-		public void ShortensTitle() =>
-			Assert.Equal(256, LoadInvalidData().Single(p => p.Rank == 11).Title.Length);
+		public async Task ShortensTitle() =>
+			Assert.Equal(256, (await LoadInvalidData()).Single(p => p.Rank == 11).Title.Length);
 
 		[Fact]
-		public void ShortensAuthor() =>
-			Assert.Equal(256, LoadInvalidData().Single(p => p.Rank == 12).Author.Length);
+		public async Task ShortensAuthor() =>
+			Assert.Equal(256, (await LoadInvalidData()).Single(p => p.Rank == 12).Author.Length);
 
-		private static List<Post> LoadPage1() => LoadPage("Page1.html");
+		private static async Task<List<Post>> LoadPage1() => await LoadPage("Page1.html");
 
-		private static List<Post> LoadInvalidData() => LoadPage("InvalidData.html");
+		private static async Task<List<Post>> LoadInvalidData() => await LoadPage("InvalidData.html");
 
-		private static List<Post> LoadPage(string file) =>
-			new Scraper(BaseAddress)
-			.GetPosts(File.ReadAllText($"{Mappings}{file}"))
+		private static async Task<List<Post>> LoadPage(string file) =>
+			(await new Scraper(BaseAddress)
+			.GetPosts(File.ReadAllText($"{Mappings}{file}")))
 			.ToList();
 	}
 }
