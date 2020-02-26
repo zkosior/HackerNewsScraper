@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "ConsoleApp": {
+      "commandName": "Project",
+      "commandLineArgs": "--address http://localhost:9091/ --posts 10"
+    }
+  }
+}

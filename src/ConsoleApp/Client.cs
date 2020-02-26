@@ -18,7 +18,7 @@ namespace HackerNewsScraper.ConsoleApp
 		{
 			try
 			{
-				return await client.GetStringAsync($"/news?p={page}");
+				return await client.GetStringAsync($"news?p={page}");
 			}
 			catch (HttpRequestException)
 			{

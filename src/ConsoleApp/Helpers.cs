@@ -25,23 +25,27 @@ namespace HackerNewsScraper.ConsoleApp
 
 		public static bool ValidateAddress(string? address, out string validatedAddress)
 		{
-			validatedAddress = "https://news.ycombinator.com/";
 			if (address == null)
 			{
+				validatedAddress = "https://news.ycombinator.com/";
 				return true;
 			}
 			else if (!IsValidUri(address))
 			{
 				Console.WriteLine("Not valid Uri.");
+				validatedAddress = string.Empty;
 				return false;
 			}
-			else if (!address.EndsWith('/')) // already is valid
+			else if (address.EndsWith('/'))
+			{
+				validatedAddress = address;
+				return true;
+			}
+			else
 			{
 				validatedAddress = address + "/"; // for consistency
 				return true;
 			}
-
-			return false; // shouldn't happen
 		}
 
 		public static bool ValidatePostsCount(int posts, out int validatedPosts)
