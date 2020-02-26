@@ -12,7 +12,7 @@ Run command: `dotnet publish .\src\ConsoleApp\ConsoleApp.csproj -c Release`
 
 ### For docker image
 
-Run command: `docker build -f .\DockerFile -t hackernews .`
+Run command: `docker build -f .\Dockerfile -t hackernews .`
 
 ## Run
 
