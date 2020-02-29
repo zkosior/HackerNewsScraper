@@ -21,7 +21,7 @@ namespace HackerNewsScraper.ConsoleApp
 			!string.IsNullOrWhiteSpace(address) &&
 			(address.StartsWith("http://") || address.StartsWith("https://")) &&
 			Uri.TryCreate(address, UriKind.Absolute, out var uri) &&
-			Dns.GetHostAddresses(uri.DnsSafeHost).Length > 0;
+			IsResolvable(uri);
 
 		public static bool ValidateAddress(string? address, out string validatedAddress)
 		{
@@ -66,6 +66,18 @@ namespace HackerNewsScraper.ConsoleApp
 
 			validatedPosts = posts;
 			return true;
+		}
+
+		private static bool IsResolvable(Uri uri)
+		{
+			try
+			{
+				return Dns.GetHostAddresses(uri.DnsSafeHost).Length > 0;
+			}
+			catch
+			{
+				return false;
+			}
 		}
 	}
 }

@@ -18,8 +18,8 @@ Run command: `docker build -f .\Dockerfile -t hackernews .`
 
 ### Executable
 
-`hackernews --posts 10`
-`hackernews --help`
+`.\hackernews --posts 10`
+`.\hackernews --help`
 
 ### Docker container
 
