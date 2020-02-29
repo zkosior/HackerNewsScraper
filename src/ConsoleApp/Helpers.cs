@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 
 namespace HackerNewsScraper.ConsoleApp
@@ -15,6 +16,7 @@ namespace HackerNewsScraper.ConsoleApp
 					IgnoreNullValues = true,
 					PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
 					WriteIndented = true,
+					Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
 				});
 
 		public static bool IsValidUri(string? address) =>
