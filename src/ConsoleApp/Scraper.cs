@@ -14,12 +14,13 @@ namespace HackerNewsScraper.ConsoleApp
 			this.hackerNewsBaseUrl = baseAddress;
 		}
 
-		public IEnumerable<Post> GetPosts(string content) => ParsePosts(GetHtmlNodes(content));
+		public IEnumerable<Post> GetPosts(string content) => this.ParsePosts(GetHtmlNodes(content));
 
 		private static HtmlNodeCollection GetHtmlNodes(string content)
 		{
 			var htmlDoc = new HtmlDocument();
 			htmlDoc.LoadHtml(content);
+
 			// this code is not resilient to layout changes
 			// as an example skipping first two rows
 			var nodes = htmlDoc.DocumentNode
@@ -36,28 +37,6 @@ namespace HackerNewsScraper.ConsoleApp
 			}
 
 			return nodes;
-		}
-
-		private IEnumerable<Post> ParsePosts(HtmlNodeCollection nodes)
-		{
-			// currently Hacker News lists 30 posts per page,
-			// and there is some site formatting that needs to be handled
-			var skipLastRows = 2;
-			for (int i = 0; i < nodes.Count - skipLastRows; i += 3)
-			{
-				var main = nodes[i].SelectNodes("./td");
-				var details = nodes[i + 1].SelectNodes("./td").Last();
-
-				if (main == null || details == null ||
-					!TryParseTitle(main, out var title) ||
-					!TryParseUri(main, out var uri) ||
-					!TryParseRank(main, out var rank) ||
-					!TryParseAuthor(details, out var author) ||
-					!TryParsePoints(details, out var points)) continue;
-
-				var anyComments = TryParseComments(details, out var comments);
-				yield return new Post(title, author, uri, rank, points, anyComments ? comments : default(int?));
-			}
 		}
 
 		private static bool TryParseTitle(
@@ -90,39 +69,6 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
-		private bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
-		{
-			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
-			if (Helpers.IsValidUri(url))
-			{
-				uri = new Uri(url);
-				return true;
-			}
-
-			if (url.StartsWith("item?") && TryFromRelative(url, out var absolute))
-			{
-				uri = new Uri(absolute);
-				return true;
-			}
-
-			uri = new Uri(this.hackerNewsBaseUrl);
-			return false;
-		}
-
-		private bool TryFromRelative(string relative, out string absolute)
-		{
-			if (Helpers.IsValidUri(this.hackerNewsBaseUrl + relative))
-			{
-				absolute = this.hackerNewsBaseUrl + relative;
-				return true;
-			}
-			else
-			{
-				absolute = this.hackerNewsBaseUrl;
-				return false;
-			}
-		}
-
 		private static bool TryParseRank(HtmlNodeCollection nodes, out int rank) =>
 			int.TryParse(
 				nodes.First().SelectSingleNode("./span").InnerText.TrimEnd('.'),
@@ -151,5 +97,61 @@ namespace HackerNewsScraper.ConsoleApp
 		// nicer option would be to replace last characters with '...' in case of too long strings
 		private static string LimitString(string text, int length) =>
 			text.Substring(0, Math.Min(text.Length, length));
+
+		private IEnumerable<Post> ParsePosts(HtmlNodeCollection nodes)
+		{
+			// currently Hacker News lists 30 posts per page,
+			// and there is some site formatting that needs to be handled
+			var skipLastRows = 2;
+			for (int i = 0; i < nodes.Count - skipLastRows; i += 3)
+			{
+				var main = nodes[i].SelectNodes("./td");
+				var details = nodes[i + 1].SelectNodes("./td").Last();
+
+				if (main == null || details == null ||
+					!TryParseTitle(main, out var title) ||
+					!this.TryParseUri(main, out var uri) ||
+					!TryParseRank(main, out var rank) ||
+					!TryParseAuthor(details, out var author) ||
+					!TryParsePoints(details, out var points)) continue;
+
+				var anyComments = TryParseComments(details, out var comments);
+				yield return new Post(title, author, uri, rank, points, anyComments ? comments : default(int?));
+			}
+		}
+
+		private bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
+		{
+			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
+			if (Helpers.IsValidUri(url))
+			{
+				uri = new Uri(url);
+				return true;
+			}
+
+			if (url.StartsWith("item?", StringComparison.OrdinalIgnoreCase) &&
+				this.TryFromRelative(url, out var absolute))
+			{
+				uri = new Uri(absolute);
+				return true;
+			}
+
+			uri = new Uri(this.hackerNewsBaseUrl);
+			return false;
+		}
+
+		private bool TryFromRelative(string relative, out string absolute)
+		{
+			if (Helpers.IsValidUri(this.hackerNewsBaseUrl + relative))
+			{
+				absolute = this.hackerNewsBaseUrl + relative;
+				return true;
+			}
+			else
+			{
+				absolute = this.hackerNewsBaseUrl;
+				return false;
+			}
+		}
 	}
 }

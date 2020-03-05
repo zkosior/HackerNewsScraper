@@ -9,7 +9,6 @@
     <CodeAnalysisRuleSet>.\StyleCop.tests.ruleset</CodeAnalysisRuleSet>
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
-    <LangVersion>8.0</LangVersion>
     <DocumentationFile>$(OutputPath)bin\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);1573;1591;1701;1702;1712</NoWarn>
     <DebugSymbols>True</DebugSymbols>
