@@ -1,7 +1,9 @@
-using HtmlAgilityPack;
+using AngleSharp;
+using AngleSharp.Dom;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace HackerNewsScraper.ConsoleApp
 {
@@ -14,19 +16,13 @@ namespace HackerNewsScraper.ConsoleApp
 			this.hackerNewsBaseUrl = baseAddress;
 		}
 
-		public IEnumerable<Post> GetPosts(string content) => this.ParsePosts(GetHtmlNodes(content));
+		public async Task<IEnumerable<Post>> GetPosts(string content) => this.ParsePosts(await GetDocument(content));
 
-		private static HtmlNodeCollection GetHtmlNodes(string content)
+		private static async Task<IHtmlCollection<IElement>> GetDocument(string content)
 		{
-			var htmlDoc = new HtmlDocument();
-			htmlDoc.LoadHtml(content);
-
-			// this code is not resilient to layout changes
-			// as an example skipping first two rows
-			var nodes = htmlDoc.DocumentNode
-				.SelectNodes("//body/center/table/tr")
-				.Skip(2).First()
-				.SelectNodes("./td/table/tr");
+			var doc = await BrowsingContext.New(Configuration.Default.WithDefaultLoader())
+				.OpenAsync(req => req.Content(content));
+			var nodes = doc.QuerySelectorAll("table.itemlist tr");
 
 			if (nodes == null)
 			{
@@ -40,10 +36,10 @@ namespace HackerNewsScraper.ConsoleApp
 		}
 
 		private static bool TryParseTitle(
-			HtmlNodeCollection nodes,
+			IHtmlCollection<IElement> nodes,
 			out string author)
 		{
-			var text = nodes.Last().SelectSingleNode("./a").InnerText;
+			var text = nodes.Last().QuerySelector("a").InnerHtml;
 			if (string.IsNullOrWhiteSpace(text))
 			{
 				author = string.Empty;
@@ -55,10 +51,10 @@ namespace HackerNewsScraper.ConsoleApp
 		}
 
 		private static bool TryParseAuthor(
-			HtmlNode node,
+			IElement node,
 			out string author)
 		{
-			var text = node.SelectNodes("./a").First().InnerText;
+			var text = node.QuerySelectorAll("a").First().InnerHtml;
 			if (string.IsNullOrWhiteSpace(text))
 			{
 				author = string.Empty;
@@ -69,20 +65,20 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
-		private static bool TryParseRank(HtmlNodeCollection nodes, out int rank) =>
+		private static bool TryParseRank(IHtmlCollection<IElement> nodes, out int rank) =>
 			int.TryParse(
-				nodes.First().SelectSingleNode("./span").InnerText.TrimEnd('.'),
+				nodes.First().QuerySelector("span").InnerHtml.TrimEnd('.'),
 				out rank);
 
-		private static bool TryParsePoints(HtmlNode node, out int points) =>
+		private static bool TryParsePoints(IElement node, out int points) =>
 			int.TryParse(
-				node.SelectNodes("./span").First().InnerText.Split(' ')[0],
+				node.QuerySelectorAll("span").First().InnerHtml.Split(' ')[0],
 				out points);
 
 		// doesn't differentiate between not found node and no comments
-		private static bool TryParseComments(HtmlNode node, out int comments)
+		private static bool TryParseComments(IElement node, out int comments)
 		{
-			var commentsElement = node.SelectNodes("./a").Last().InnerText.Split('&');
+			var commentsElement = node.QuerySelectorAll("a").Last().InnerHtml.Split('&');
 			if (commentsElement.Length != 2)
 			{
 				comments = 0;
@@ -90,7 +86,7 @@ namespace HackerNewsScraper.ConsoleApp
 			}
 
 			return int.TryParse(
-				node.SelectNodes("./a").Last().InnerText.Split('&')[0],
+				node.QuerySelectorAll("a").Last().InnerHtml.Split('&')[0],
 				out comments);
 		}
 
@@ -98,15 +94,15 @@ namespace HackerNewsScraper.ConsoleApp
 		private static string LimitString(string text, int length) =>
 			text.Substring(0, Math.Min(text.Length, length));
 
-		private IEnumerable<Post> ParsePosts(HtmlNodeCollection nodes)
+		private IEnumerable<Post> ParsePosts(IHtmlCollection<IElement> nodes)
 		{
 			// currently Hacker News lists 30 posts per page,
 			// and there is some site formatting that needs to be handled
 			var skipLastRows = 2;
-			for (int i = 0; i < nodes.Count - skipLastRows; i += 3)
+			for (int i = 0; i < nodes.Length - skipLastRows; i += 3)
 			{
-				var main = nodes[i].SelectNodes("./td");
-				var details = nodes[i + 1].SelectNodes("./td").Last();
+				var main = nodes[i].QuerySelectorAll("td");
+				var details = nodes[i + 1].QuerySelectorAll("td").Last();
 
 				if (main == null || details == null ||
 					!TryParseTitle(main, out var title) ||
@@ -120,9 +116,9 @@ namespace HackerNewsScraper.ConsoleApp
 			}
 		}
 
-		private bool TryParseUri(HtmlNodeCollection nodes, out Uri uri)
+		private bool TryParseUri(IHtmlCollection<IElement> nodes, out Uri uri)
 		{
-			var url = nodes.Last().SelectSingleNode("./a").Attributes["href"].Value;
+			var url = nodes.Last().QuerySelector("a").Attributes["href"].Value;
 			if (Helpers.IsValidUri(url))
 			{
 				uri = new Uri(url);

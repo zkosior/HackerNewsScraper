@@ -1,0 +1,1 @@
+docker-compose -f ./test/wiremock.net/docker-compose.yaml up

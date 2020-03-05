@@ -21,7 +21,7 @@ namespace HackerNewsScraper.ConsoleApp
 				{
 					// pages are numbered sequentially
 					var content = await client.DownloadContent(++page);
-					posts = scraper.GetPosts(content).ToList();
+					posts = (await scraper.GetPosts(content)).ToList();
 				}
 				catch (ApplicationException e)
 				{
