@@ -9,8 +9,24 @@ namespace HackerNewsScraper.ConsoleAppTests
 {
 	public class ScrapperTests
 	{
-		private const string Mappings = @"..\..\..\..\..\test\wiremock.net\mappings\";
-		private const string BaseAddress = "https://news.ycombinator.com/"; // any address, doesn't have to be HN
+		public ScrapperTests()
+		{
+			Mappings = Path.Combine(
+			"..",
+			"..",
+			"..",
+			"..",
+			"..",
+			"test",
+			"wiremock.net",
+			"mappings");
+
+			BaseAddress = "https://news.ycombinator.com/"; // any address, doesn't have to be HN
+		}
+
+		private string Mappings { get; }
+
+		private string BaseAddress { get; } // any address, doesn't have to be HN
 
 		[Fact]
 		public async Task ConvertsHtmlToObjects()
@@ -76,13 +92,13 @@ namespace HackerNewsScraper.ConsoleAppTests
 		public async Task ShortensAuthor() =>
 			Assert.Equal(256, (await LoadInvalidData()).Single(p => p.Rank == 12).Author.Length);
 
-		private static async Task<List<Post>> LoadPage1() => await LoadPage("Page1.html");
+		private async Task<List<Post>> LoadPage1() => await LoadPage("Page1.html");
 
-		private static async Task<List<Post>> LoadInvalidData() => await LoadPage("InvalidData.html");
+		private async Task<List<Post>> LoadInvalidData() => await LoadPage("InvalidData.html");
 
-		private static async Task<List<Post>> LoadPage(string file) =>
+		private async Task<List<Post>> LoadPage(string file) =>
 			(await new Scraper(BaseAddress)
-			.GetPosts(File.ReadAllText($"{Mappings}{file}")))
+			.GetPosts(File.ReadAllText(Path.Combine(Mappings, file))))
 			.ToList();
 	}
 }
