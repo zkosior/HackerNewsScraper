@@ -1,18 +1,17 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <OutputType>Exe</OutputType>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>HackerNewsScraper.ConsoleAppTests</RootNamespace>
-  </PropertyGroup>
-
-  <PropertyGroup>
-    <CodeAnalysisRuleSet>.\StyleCop.tests.ruleset</CodeAnalysisRuleSet>
-    <LangVersion>latest</LangVersion>
+    <AssemblyName>hackernews</AssemblyName>
+    <RootNamespace>HackerNewsScraper.ConsoleApp</RootNamespace>
+    <TieredCompilationQuickJit>true</TieredCompilationQuickJit>
+    <CodeAnalysisRuleSet>.\StyleCop.ruleset</CodeAnalysisRuleSet>
     <Nullable>enable</Nullable>
     <DocumentationFile>$(OutputPath)bin\$(AssemblyName).xml</DocumentationFile>
     <NoWarn>$(NoWarn);1573;1591;1701;1702;1712</NoWarn>
     <DebugSymbols>True</DebugSymbols>
-    <DebugType>Full</DebugType>
+    <Version>1.0.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -21,14 +20,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AdditionalFiles Include=".\StyleCop.tests.ruleset" Link="StyleCop.tests.ruleset" />
+    <AdditionalFiles Include=".\StyleCop.ruleset" Link="StyleCop.ruleset" />
     <None Include="..\..\.editorconfig" Link=".editorconfig" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="AutoFixture.Xunit2" Version="4.11.0" />
-    <PackageReference Include="FluentAssertions" Version="5.10.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.1.1" />
+<<<<<<< Updated upstream
+    <PackageReference Include="HtmlAgilityPack" Version="1.11.18" />
+=======
+    <PackageReference Include="anglesharp" Version="0.13.0" />
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -37,17 +37,8 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="WireMock.Net" Version="1.1.6" />
-    <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.analyzers" Version="0.10.0" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\ConsoleApp\ConsoleApp.csproj" />
+>>>>>>> Stashed changes
+    <PackageReference Include="System.CommandLine" Version="2.0.0-beta1.20104.2" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.Encodings.Web;
 using System.Text.Json;
@@ -21,7 +22,8 @@ namespace HackerNewsScraper.ConsoleApp
 
 		public static bool IsValidUri(string? address) =>
 			!string.IsNullOrWhiteSpace(address) &&
-			(address.StartsWith("http://") || address.StartsWith("https://")) &&
+			(address.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+			address.StartsWith("https://", StringComparison.OrdinalIgnoreCase)) &&
 			Uri.TryCreate(address, UriKind.Absolute, out var uri) &&
 			IsResolvable(uri);
 
@@ -70,6 +72,7 @@ namespace HackerNewsScraper.ConsoleApp
 			return true;
 		}
 
+		[SuppressMessage("Design", "CA1031:Do not catch general exception types", Justification = "Leave for now. Not a main focus of this exercise.")]
 		private static bool IsResolvable(Uri uri)
 		{
 			try

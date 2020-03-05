@@ -5,9 +5,9 @@ using System.Threading.Tasks;
 
 namespace HackerNewsScraper.ConsoleApp
 {
-	class Program
+	internal class Program
 	{
-		static async Task Main(params string[] args)
+		private static async Task Main(params string[] args)
 		{
 			RootCommand root = new RootCommand("Scraps Hacker News page for posts metadata.")
 			{
@@ -39,8 +39,9 @@ namespace HackerNewsScraper.ConsoleApp
 				return;
 			}
 
+			using var client = new Client(validatedAddress!);
 			var nodes = await Collector.Collect(
-				new Client(validatedAddress!),
+				client,
 				new Scraper(validatedAddress!),
 				validatedPosts);
 
