@@ -11,7 +11,7 @@
             "preLaunchTask": "build",
             // If you have changed target frameworks, make sure to update the program path.
             "program": "${workspaceFolder}/src/ConsoleApp/bin/Debug/netcoreapp3.1/hackernews.dll",
-            "args": [],
+            "args": ["--address", "http://localhost:9091/", "--posts", "10"],
             "cwd": "${workspaceFolder}/src/ConsoleApp",
             // For more information about the 'console' field, see https://aka.ms/VSCode-CS-LaunchJson-Console
             "console": "internalConsole",
